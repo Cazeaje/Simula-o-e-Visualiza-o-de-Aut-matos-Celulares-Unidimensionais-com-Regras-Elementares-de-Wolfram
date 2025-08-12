@@ -1,0 +1,80 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import imageio.v2 as imageio
+import io
+from PIL import Image
+
+def rule_from_number(n):
+    if not (0 <= n <= 255):
+        raise ValueError('Rule must be between 0 and 255')
+    bits = [(n >> i) & 1 for i in range(7, -1, -1)]
+    return np.array(bits, dtype=np.uint8)
+
+def step(line, rule_bits):
+    left = np.roll(line, 1)
+    right = np.roll(line, -1)
+    indices = (4 * left + 2 * line + right).astype(int)
+    new = rule_bits[indices]
+    return new
+
+def run(rule_num, width=201, steps=200, seed=None, density=0.5):
+    rule_bits = rule_from_number(rule_num)
+    if seed is None or seed == 0:
+        line = np.zeros(width, dtype=np.uint8)
+        line[width // 2] = 1
+    else:
+        rng = np.random.RandomState(seed)
+        line = (rng.rand(width) < density).astype(np.uint8)
+
+    space_time = np.zeros((steps, width), dtype=np.uint8)
+    space_time[0] = line
+    for t in range(1, steps):
+        line = step(line, rule_bits)
+        space_time[t] = line
+    return space_time
+
+def plot_space_time(space_time, cmap='binary', dpi=150, save_path=None):
+    fig, ax = plt.subplots(figsize=(space_time.shape[1] / 50, space_time.shape[0] / 50), dpi=dpi)
+    ax.imshow(space_time, interpolation='nearest', cmap=cmap, aspect='auto')
+    ax.set_xlabel('Space (cells)')
+    ax.set_ylabel('Time (steps)')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+        print(f'Saved to: {save_path}')
+    else:
+        plt.show()
+
+def save_gif(space_time, path, duration=0.05):
+    frames = []
+    for t in range(space_time.shape[0]):
+        fig = plt.figure(frameon=False)
+        fig.set_size_inches(space_time.shape[1] / 50, 1)
+        ax = plt.Axes(fig, [0., 0., 1., 1.])
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        ax.imshow(space_time[t:t+1, :], aspect='auto', interpolation='nearest', cmap='binary')
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        plt.close(fig)
+        buf.seek(0)
+        frames.append(Image.open(buf))
+    frames[0].save(path, save_all=True, append_images=frames[1:], duration=int(duration * 1000), loop=0)
+    print(f'GIF saved to: {path}')
+
+def run_and_plot(rule=30, steps=200, width=201, seed=0, density=0.5, save_path=None, gif_path=None):
+    st = run(rule, width=width, steps=steps, seed=seed, density=density)
+    plot_space_time(st, save_path=save_path)
+    if gif_path:
+        save_gif(st, gif_path)
+
+run_and_plot(
+    rule=110,
+    steps=300,
+    width=301,
+    seed=0,
+    save_path='/content/output.png',
+    gif_path='/content/output.gif'
+)
