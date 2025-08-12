@@ -5,7 +5,7 @@ Elementary Cellular Automata Visualizer
 Este projeto implementa um visualizador e gerador de padrões de autômatos celulares unidimensionais, baseados nas regras de Wolfram (0–255).
 Ele permite criar simulações, salvar imagens e gerar GIFs que representam a evolução do sistema ao longo do tempo.
 
-O Artigo completo falando sobre meu projeto: https://docs.google.com/document/d/17u2Ybh7F8iaY64yUaOeekiH1xZ7efH0yJAfA29c28po/edit?tab=t.0
+O Artigo completo falando sobre meu projeto: [Elementary Cellular Automata Visualizer: Implementação em Python](https://docs.google.com/document/d/17u2Ybh7F8iaY64yUaOeekiH1xZ7efH0yJAfA29c28po/edit?tab=t.0)
 
 
 
